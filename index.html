@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Format Converter & Resizer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .upload-container {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+        
+        .upload-container:hover {
+            background: #e8f4ff;
+            border-color: #2980b9;
+        }
+        
+        .upload-container.dragover {
+            background: #d6eaf8;
+            border-color: #2980b9;
+            transform: scale(1.01);
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #34495e;
+        }
+        
+        .browse-btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .browse-btn:hover {
+            background: #2980b9;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        
+        .preview-box {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+        }
+        
+        .preview-title {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .option-box {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .option-title {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-weight: 600;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .format-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .format-option {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .format-option:hover {
+            background: #f8f9fa;
+        }
+        
+        .format-option.selected {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .size-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .size-option {
+            padding: 10px 5px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .size-option:hover {
+            background: #f8f9fa;
+        }
+        
+        .size-option.selected {
+            background: #9b59b6;
+            color: white;
+            border-color: #9b59b6;
+        }
+        
+        .custom-size {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .custom-size input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 100px;
+        }
+        
+        .custom-size span {
+            color: #7f8c8d;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .convert-btn {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .convert-btn:hover {
+            background: #27ae60;
+        }
+        
+        .download-btn {
+            background: #9b59b6;
+            color: white;
+        }
+        
+        .download-btn:hover {
+            background: #8e44ad;
+        }
+        
+        .download-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .info-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .preview-container, .options-container {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Format Converter & Resizer</h1>
+    <p class="subtitle">Convert your images between formats and resize them to your desired dimensions</p>
+    
+    <div class="container">
+        <div class="upload-container" id="drop-area">
+            <div class="upload-icon">📁</div>
+            <p class="upload-text">Drag & drop your image here or click to browse</p>
+            <button class="browse-btn" id="browse-btn">Browse Files</button>
+            <input type="file" id="file-input" accept="image/*">
+        </div>
+        
+        <div class="preview-container">
+            <div class="preview-box">
+                <h3 class="preview-title">Original Image</h3>
+                <img id="original-preview" class="preview-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23999'%3EOriginal Preview%3C/text%3E%3C/svg%3E">
+                <div id="original-dimensions"></div>
+            </div>
+            <div class="preview-box">
+                <h3 class="preview-title">Converted Image</h3>
+                <img id="converted-preview" class="preview-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23999'%3EConverted Preview%3C/text%3E%3C/svg%3E">
+                <div id="converted-dimensions"></div>
+            </div>
+        </div>
+        
+        <div class="options-container">
+            <div class="option-box">
+                <h3 class="option-title">Output Format</h3>
+                <div class="format-selector">
+                    <div class="format-option selected" data-format="png">PNG</div>
+                    <div class="format-option" data-format="jpeg">JPG</div>
+                    <div class="format-option" data-format="webp">WEBP</div>
+                </div>
+            </div>
+            
+            <div class="option-box">
+                <h3 class="option-title">Resize Options</h3>
+                <div class="size-selector">
+                    <div class="size-option" data-width="1920" data-height="1080">1920×1080</div>
+                    <div class="size-option" data-width="1280" data-height="720">1280×720</div>
+                    <div class="size-option" data-width="1024" data-height="768">1024×768</div>
+                    <div class="size-option" data-width="800" data-height="600">800×600</div>
+                    <div class="size-option selected" data-width="original" data-height="original">Original Size</div>
+                </div>
+                
+                <div class="custom-size">
+                    <span>Custom: </span>
+                    <input type="number" id="custom-width" placeholder="Width">
+                    <span>×</span>
+                    <input type="number" id="custom-height" placeholder="Height">
+                    <span>px</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="convert-btn" class="action-btn convert-btn">Convert Image</button>
+            <a id="download-btn" class="action-btn download-btn" download="converted.png" disabled>Download Converted Image</a>
+        </div>
+        
+        <p class="info-text">All processing happens in your browser - your images are never uploaded to any server.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('file-input');
+            const browseBtn = document.getElementById('browse-btn');
+            const dropArea = document.getElementById('drop-area');
+            const originalPreview = document.getElementById('original-preview');
+            const convertedPreview = document.getElementById('converted-preview');
+            const convertBtn = document.getElementById('convert-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const formatOptions = document.querySelectorAll('.format-option');
+            const sizeOptions = document.querySelectorAll('.size-option');
+            const customWidth = document.getElementById('custom-width');
+            const customHeight = document.getElementById('custom-height');
+            const originalDimensions = document.getElementById('original-dimensions');
+            const convertedDimensions = document.getElementById('converted-dimensions');
+            
+            let selectedFormat = 'png';
+            let selectedWidth = 'original';
+            let selectedHeight = 'original';
+            let convertedImageData = null;
+            let originalImageWidth = 0;
+            let originalImageHeight = 0;
+            
+            // Event listeners for buttons
+            browseBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Drag and drop functionality
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            });
+            
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.classList.remove('dragover');
+            });
+            
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // Format selection
+            formatOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    formatOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedFormat = option.getAttribute('data-format');
+                    
+                    // If we already have a converted image, update the download link
+                    if (convertedImageData) {
+                        updateDownloadLink();
+                    }
+                });
+            });
+            
+            // Size selection
+            sizeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    sizeOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    if (option.getAttribute('data-width') === 'original') {
+                        selectedWidth = 'original';
+                        selectedHeight = 'original';
+                    } else {
+                        selectedWidth = parseInt(option.getAttribute('data-width'));
+                        selectedHeight = parseInt(option.getAttribute('data-height'));
+                    }
+                });
+            });
+            
+            // Custom size inputs
+            customWidth.addEventListener('input', () => {
+                if (customWidth.value && customHeight.value) {
+                    sizeOptions.forEach(opt => opt.classList.remove('selected'));
+                    selectedWidth = parseInt(customWidth.value);
+                    selectedHeight = parseInt(customHeight.value);
+                }
+            });
+            
+            customHeight.addEventListener('input', () => {
+                if (customWidth.value && customHeight.value) {
+                    sizeOptions.forEach(opt => opt.classList.remove('selected'));
+                    selectedWidth = parseInt(customWidth.value);
+                    selectedHeight = parseInt(customHeight.value);
+                }
+            });
+            
+            // Convert button
+            convertBtn.addEventListener('click', convertImage);
+            
+            function handleFileSelect(e) {
+                if (e.target.files.length) {
+                    handleFile(e.target.files[0]);
+                }
+            }
+            
+            function handleFile(file) {
+                if (!file.type.match('image.*')) {
+                    alert('Please select an image file.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        originalImageWidth = img.width;
+                        originalImageHeight = img.height;
+                        originalDimensions.textContent = `Original: ${originalImageWidth}×${originalImageHeight}px`;
+                    };
+                    img.src = e.target.result;
+                    
+                    originalPreview.src = e.target.result;
+                    convertedPreview.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23999'%3EConverted Preview%3C/text%3E%3C/svg%3E";
+                    convertedDimensions.textContent = '';
+                    convertedImageData = null;
+                    downloadBtn.setAttribute('disabled', 'true');
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            function convertImage() {
+                if (originalPreview.src.includes('svg+xml')) {
+                    alert('Please select an image first.');
+                    return;
+                }
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    // Calculate dimensions
+                    let outputWidth, outputHeight;
+                    
+                    if (selectedWidth === 'original') {
+                        outputWidth = img.width;
+                        outputHeight = img.height;
+                    } else {
+                        outputWidth = selectedWidth;
+                        outputHeight = selectedHeight;
+                    }
+                    
+                    canvas.width = outputWidth;
+                    canvas.height = outputHeight;
+                    
+                    // Draw image with the selected dimensions
+                    ctx.drawImage(img, 0, 0, outputWidth, outputHeight);
+                    
+                    // Convert to selected format
+                    convertedImageData = canvas.toDataURL(`image/${selectedFormat}`);
+                    convertedPreview.src = convertedImageData;
+                    convertedDimensions.textContent = `Converted: ${outputWidth}×${outputHeight}px`;
+                    
+                    updateDownloadLink();
+                    downloadBtn.removeAttribute('disabled');
+                };
+                
+                img.src = originalPreview.src;
+            }
+            
+            function updateDownloadLink() {
+                if (convertedImageData) {
+                    downloadBtn.href = convertedImageData;
+                    downloadBtn.download = `converted.${selectedFormat}`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
